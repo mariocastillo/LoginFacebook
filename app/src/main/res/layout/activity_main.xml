@@ -26,11 +26,11 @@
         android:layout_marginTop="30dp"
         android:layout_marginBottom="30dp" />
 
-    <ImageButton
-        android:id="@+id/imageButton"
+    <com.facebook.login.widget.ProfilePictureView
+        android:id="@+id/imageprofile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/login_button"
         android:layout_centerHorizontal="true"
-        />
+        android:layout_above="@+id/mensajedelogin">
+    </com.facebook.login.widget.ProfilePictureView>
 </RelativeLayout>
