@@ -1,5 +1,6 @@
 package com.example.mario.loginfacebook;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +19,8 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.Profile;
+import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
@@ -31,17 +34,31 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class LoginFacebook extends AppCompatActivity {
     private TextView mensaje;
     private LoginButton loginButton;
     private ProfilePictureView imageProfile;
+    private Profile profile;
+    private ProfileTracker profileTracker;
 
     private CallbackManager callbackManager;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         callbackManager = CallbackManager.Factory.create();
+        profileTracker = new ProfileTracker() {
+            @Override
+            protected void onCurrentProfileChanged(
+                    Profile oldProfile,
+                    Profile currentProfile) {
+                // App code
+            }
+        };
+        
+        
         setContentView(R.layout.activity_main);
         loginButton= (LoginButton) findViewById(R.id.login_button);
         mensaje= (TextView) findViewById(R.id.mensajedelogin);
@@ -49,6 +66,18 @@ public class MainActivity extends AppCompatActivity {
 
         loginButton.setReadPermissions(Arrays.asList(
                 "public_profile", "email", "user_birthday", "user_friends"));
+        profile=Profile.getCurrentProfile();
+        if (profile!=null){
+            profile=Profile.getCurrentProfile();
+            mensaje.setText(profile.getName());
+            imageProfile.setProfileId(profile.getId());
+            imageProfile.setVisibility(View.VISIBLE);
+        }
+        else {
+            mensaje.setText("");
+            imageProfile.setVisibility(View.INVISIBLE);
+
+        }
 
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
@@ -61,8 +90,10 @@ public class MainActivity extends AppCompatActivity {
                                     JSONObject object,
                                     GraphResponse response) {
                                 try {
-                                    mensaje.setText(object.getString("name"));
-                                    imageProfile.setProfileId(object.getString("id"));
+                                    profile=Profile.getCurrentProfile();
+                                    mensaje.setText(profile.getName());
+                                    imageProfile.setProfileId(profile.getId());
+                                    imageProfile.setVisibility(View.VISIBLE);
                                     Log.d("link",object.getString("link"));
                                     Log.d("link",object.getString("email"));
                                     Log.d("link",object.getString("birthday"));
@@ -91,11 +122,20 @@ public class MainActivity extends AppCompatActivity {
             public void onError(FacebookException error) {
                 mensaje.setText("Login Error:"+error.getMessage());
 
+
             }
         });
 
 
     }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        profileTracker.stopTracking();
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
